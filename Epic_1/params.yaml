@@ -1,0 +1,30 @@
+# Parámetros del pipeline de la Épica 1.
+# Toda regla de negocio vive aquí: cambiar un valor y correr `make pipeline`
+# re-ejecuta solo las etapas afectadas (DVC rastrea cada clave).
+
+data:
+  raw_dir: ../ml-32m            # MovieLens 32M tal como se descargó (no se copia al repo, ver D-03)
+  interim_dir: data/interim     # Parquet tipado y validado (US1.3 t1)
+  processed_dir: data/processed # Parquet limpio, salida de US1.3 t2
+  min_ratings: 10               # Umbral del EDA: mínimo de ratings por usuario y por película (US1.3 t2, D-02)
+
+serving:
+  min_ratings: 50               # Mínimo para que una película aparezca en rankings y recomendaciones.
+                                # Independiente de data.min_ratings: no cambia los datos de entrenamiento.
+
+validation:                     # US1.3 t1
+  verify_checksums: true        # MD5 vs ml-32m/checksums.txt (detecta descargas truncadas)
+  rating_min: 0.5               # Escala oficial ML-32M: 0,5–5,0 en medias estrellas (D-01, aprobada)
+  rating_max: 5.0
+  rating_step: 0.5
+  min_date: "1995-01-01"        # Timestamps anteriores a esta fecha son sospechosos (aviso)
+  # Permite al PO subir/bajar la severidad de un check sin tocar código.
+  # Ej.: {ratings_timestamp_range: blocking}
+  severity_overrides: {}
+
+clean:                          # US1.3 t2
+  iterative: true               # repetir el filtro hasta que todos cumplan el umbral (k-core, ver D-02)
+  max_iter: 50
+
+profile:                        # US1.5 t1: sensibilidad del umbral para el dashboard
+  k_values: [1, 5, 10, 20, 30, 50, 100]

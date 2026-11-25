@@ -1,0 +1,12 @@
+{
+  "checks_total": 25,
+  "checks_passed": 25,
+  "blocking_failed": 0,
+  "warnings": 0,
+  "raw_ratings": 32000204,
+  "raw_users": 200948,
+  "raw_movies_rated": 84432,
+  "raw_movies_catalog": 87585,
+  "raw_tags": 2000072,
+  "raw_density_pct": 0.1886
+}

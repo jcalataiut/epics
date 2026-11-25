@@ -1,0 +1,17 @@
+[project]
+name = "movielens-epic1"
+version = "0.1.0"
+description = "Épica 1: validación, limpieza (k-core) y dashboard de calidad de MovieLens 32M"
+requires-python = ">=3.11"
+# Las versiones exactas están en requirements.txt (generado desde requirements.in)
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"

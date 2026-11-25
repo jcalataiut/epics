@@ -1,0 +1,176 @@
+schema: '2.0'
+stages:
+  ingest:
+    cmd: python -m movielens.ingest
+    deps:
+    - path: ../ml-32m/checksums.txt
+      hash: md5
+      md5: 27156037c68f14dcfb4704f86ad4d530
+      size: 178
+    - path: ../ml-32m/links.csv
+      hash: md5
+      md5: 8f033867bcb4e6be8792b21468b4fa6e
+      size: 1950748
+    - path: ../ml-32m/movies.csv
+      hash: md5
+      md5: 0df90835c19151f9d819d0822e190797
+      size: 4242926
+    - path: ../ml-32m/ratings.csv
+      hash: md5
+      md5: cf12b74f9ad4b94a011f079e26d4270a
+      size: 877076222
+    - path: ../ml-32m/tags.csv
+      hash: md5
+      md5: 963bf4fa4de6b8901868fddd3eb54567
+      size: 72353890
+    - path: src/movielens/ingest.py
+      hash: md5
+      md5: ff730ac68cb1fed061391e7ecf77f7be
+      size: 6570
+    - path: src/movielens/reporting.py
+      hash: md5
+      md5: dc108ef6417063c910921296b0e00dc2
+      size: 4244
+    params:
+      params.yaml:
+        data.interim_dir: data/interim
+        data.raw_dir: ../ml-32m
+        validation.verify_checksums: true
+    outs:
+    - path: data/interim
+      hash: md5
+      md5: 1bede744dd8256bd8980ffc449b7bb7a.dir
+      size: 185281887
+      nfiles: 6
+    - path: reports/quality/integrity.json
+      hash: md5
+      md5: 41c025b139199097d12aecda4cc2f4ca
+      size: 4753
+  validate:
+    cmd: python -m movielens.validate
+    deps:
+    - path: data/interim
+      hash: md5
+      md5: 1bede744dd8256bd8980ffc449b7bb7a.dir
+      size: 185281887
+      nfiles: 6
+    - path: src/movielens/checks.py
+      hash: md5
+      md5: c2895956acaeac9f5dc7681314033ded
+      size: 8632
+    - path: src/movielens/reporting.py
+      hash: md5
+      md5: dc108ef6417063c910921296b0e00dc2
+      size: 4244
+    - path: src/movielens/validate.py
+      hash: md5
+      md5: 78ae29bab94a69ba96b61bbfb0132d62
+      size: 1599
+    params:
+      params.yaml:
+        validation:
+          verify_checksums: true
+          rating_min: 0.5
+          rating_max: 5.0
+          rating_step: 0.5
+          min_date: '1995-01-01'
+          severity_overrides: {}
+    outs:
+    - path: reports/metrics/quality.json
+      hash: md5
+      md5: 47943cc7a274428a5e19a60c299f8cca
+      size: 250
+    - path: reports/quality/checks.json
+      hash: md5
+      md5: 0a513ce23b5d6f91f758c56d85df8a17
+      size: 9448
+  clean:
+    cmd: python -m movielens.clean
+    deps:
+    - path: data/interim
+      hash: md5
+      md5: 1bede744dd8256bd8980ffc449b7bb7a.dir
+      size: 185281887
+      nfiles: 6
+    - path: reports/metrics/quality.json
+      hash: md5
+      md5: 47943cc7a274428a5e19a60c299f8cca
+      size: 250
+    - path: reports/quality/checks.json
+      hash: md5
+      md5: 0a513ce23b5d6f91f758c56d85df8a17
+      size: 9448
+    - path: reports/quality/integrity.json
+      hash: md5
+      md5: 41c025b139199097d12aecda4cc2f4ca
+      size: 4753
+    - path: src/movielens/clean.py
+      hash: md5
+      md5: 13a4e98440f1a66848f7b08656b7e7e8
+      size: 6459
+    - path: src/movielens/ingest.py
+      hash: md5
+      md5: ff730ac68cb1fed061391e7ecf77f7be
+      size: 6570
+    - path: src/movielens/kcore.py
+      hash: md5
+      md5: a4d60ae7275d260b000db8a207a8affd
+      size: 3130
+    params:
+      params.yaml:
+        clean:
+          iterative: true
+          max_iter: 50
+        data.min_ratings: 10
+        data.processed_dir: data/processed
+    outs:
+    - path: data/processed
+      hash: md5
+      md5: 40e3a792e5ae8f68a817a2d09d75a54d.dir
+      size: 167247125
+      nfiles: 4
+    - path: reports/clean_report.md
+      hash: md5
+      md5: 7b289a437de8eb80813916a68fc27435
+      size: 3664
+    - path: reports/metrics/clean.json
+      hash: md5
+      md5: 3a4c5364603dce407b18f518cb41bdaa
+      size: 868
+  profile:
+    cmd: python -m movielens.profile
+    deps:
+    - path: data/interim
+      hash: md5
+      md5: 1bede744dd8256bd8980ffc449b7bb7a.dir
+      size: 185281887
+      nfiles: 6
+    - path: reports/metrics/quality.json
+      hash: md5
+      md5: 47943cc7a274428a5e19a60c299f8cca
+      size: 250
+    - path: src/movielens/kcore.py
+      hash: md5
+      md5: a4d60ae7275d260b000db8a207a8affd
+      size: 3130
+    - path: src/movielens/profile.py
+      hash: md5
+      md5: edb62357167f2a016e2a1776e324763e
+      size: 1796
+    params:
+      params.yaml:
+        clean.max_iter: 50
+        profile:
+          k_values:
+          - 1
+          - 5
+          - 10
+          - 20
+          - 30
+          - 50
+          - 100
+    outs:
+    - path: reports/profile/kcore_sweep.csv
+      hash: md5
+      md5: 2efc6326648d41c4781503abd482c163
+      size: 519

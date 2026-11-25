@@ -1,0 +1,50 @@
+{
+  "min_ratings": 10,
+  "iterative": true,
+  "iterations": 3,
+  "converged": true,
+  "before": {
+    "ratings": 32000204,
+    "users": 200948,
+    "movies": 84432,
+    "density_pct": 0.1886,
+    "sparsity_pct": 99.8114
+  },
+  "after": {
+    "ratings": 31842696,
+    "users": 200947,
+    "movies": 31961,
+    "density_pct": 0.4958,
+    "sparsity_pct": 99.5042
+  },
+  "removed": {
+    "ratings": 157508,
+    "users": 1,
+    "movies": 52471
+  },
+  "retained_pct": {
+    "ratings": 99.51,
+    "users": 100.0,
+    "movies": 37.85
+  },
+  "history": [
+    {
+      "iteration": 1,
+      "ratings": 31842705,
+      "users": 200948,
+      "items": 31961
+    },
+    {
+      "iteration": 2,
+      "ratings": 31842696,
+      "users": 200947,
+      "items": 31961
+    },
+    {
+      "iteration": 3,
+      "ratings": 31842696,
+      "users": 200947,
+      "items": 31961
+    }
+  ]
+}

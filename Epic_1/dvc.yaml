@@ -1,0 +1,86 @@
+# Pipeline de la Épica 1. Cada etapa referencia la historia/tarea que implementa.
+# Rutas y reglas salen de params.yaml (interpolación ${...}).
+#
+#   ingest ──▶ validate ──▶ clean
+#                  └──────▶ profile
+#
+# Si `ingest` o `validate` encuentran un check bloqueante fallido terminan con
+# exit 1 y DVC no ejecuta las etapas siguientes.
+
+stages:
+  ingest:
+    desc: "US1.3 t1 · Integridad (MD5) de los CSV y conversión a Parquet tipado"
+    cmd: python -m movielens.ingest
+    deps:
+      - ${data.raw_dir}/ratings.csv
+      - ${data.raw_dir}/movies.csv
+      - ${data.raw_dir}/tags.csv
+      - ${data.raw_dir}/links.csv
+      - ${data.raw_dir}/checksums.txt
+      - src/movielens/ingest.py
+      - src/movielens/reporting.py
+    params:
+      - data.raw_dir
+      - data.interim_dir
+      - validation.verify_checksums
+    outs:
+      - ${data.interim_dir}
+      - reports/quality/integrity.json:
+          cache: false
+
+  validate:
+    desc: "US1.3 t1 · Controles que paran el pipeline: valores faltantes, notas fuera de escala, ratings repetidos, IDs inexistentes"
+    cmd: python -m movielens.validate
+    deps:
+      - ${data.interim_dir}
+      - src/movielens/checks.py
+      - src/movielens/validate.py
+      - src/movielens/reporting.py
+    params:
+      - validation
+    outs:
+      - reports/quality/checks.json:
+          cache: false
+    metrics:
+      - reports/metrics/quality.json:
+          cache: false
+
+  clean:
+    desc: "US1.3 t2 · Umbral del EDA (data.min_ratings) y datos limpios versionados con DVC + informe corto"
+    cmd: python -m movielens.clean
+    deps:
+      - ${data.interim_dir}
+      - reports/metrics/quality.json   # gate: sin timestamp, sólo cambia si cambia el resultado
+      - reports/quality/integrity.json
+      - reports/quality/checks.json      # el informe corto resume los controles
+      - src/movielens/kcore.py
+      - src/movielens/clean.py
+      - src/movielens/ingest.py          # derive_users
+    params:
+      - data.min_ratings
+      - data.processed_dir
+      - clean
+    outs:
+      - ${data.processed_dir}
+      - reports/clean_report.md:
+          cache: false
+    metrics:
+      - reports/metrics/clean.json:
+          cache: false
+
+  profile:
+    desc: "US1.5 t1 · Sensibilidad del umbral (densidad y cobertura) para el dashboard"
+    cmd: python -m movielens.profile
+    deps:
+      - ${data.interim_dir}
+      - reports/metrics/quality.json
+      - src/movielens/kcore.py
+      - src/movielens/profile.py
+    params:
+      - profile
+      - clean.max_iter
+    plots:
+      - reports/profile/kcore_sweep.csv:
+          x: k
+          y: density_pct
+          cache: false
